@@ -127,8 +127,7 @@ int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[
                 }
             break;
             case 'c':
-                int c = getch();
-                if(c == 'b') printw(".");
+                printw(".");
                 move(*cur_row, *cur_col);
                 if(check_ans(*cur_row, *cur_col, ans, len_ans)){
                     win_count--;

@@ -7,8 +7,10 @@ void main(int argc,char *argv[]){
   keypad(stdscr, TRUE);
   srand(time(NULL));
   int row = ROW, col = COL;
-  int ch,cur_row = 0, cur_col = 0;
+  int ch;
   A:
+  clear();
+  int cur_row = 0, cur_col = 0;
   int len_ans = 12;
   Point * ans = (Point *)malloc(len_ans * sizeof(Point));
   for (int i = 0; i < len_ans; i++){
