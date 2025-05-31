@@ -1,5 +1,14 @@
 #include "header.h"
 
+static int num_of_tyles = ROW * COL;
+
+void lost(int row, int col){
+    printw("O");
+    move(0,0);
+    clear();
+    printw("YOU LOST");
+    refresh();
+}
 
 int check_ans(int cur_row, int cur_col, Point ans[], int len_ans){
     for(int i = 0; i < len_ans; i++){
@@ -54,14 +63,16 @@ void zone_search(int cur_row, int cur_col, int row, int col, Point ans[], int le
         }
         
         visit[step++] = c;
+        num_of_tyles--;
         
         move(c.y, c.x);
         int a = check_adj(c.y, c.x, ans, len_ans);
         refresh();
+        if (!a) continue;
         
         for(int i = 0; i < 8; i++) {
             Point neighbor = {c.x + dx[i], c.y + dy[i]};
-            if (!visited(visit, neighbor, step)) {
+            if (neighbor.x >= 0 && neighbor.x < col && neighbor.y >= 0 && neighbor.y < row && !visited(visit, neighbor, step)) {
                 push(&stack, neighbor);
             }
         }
@@ -72,8 +83,8 @@ void zone_search(int cur_row, int cur_col, int row, int col, Point ans[], int le
     return;
 }
 
-
-void move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[], int len_ans){
+int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[], int len_ans){
+    static int win_count = 0;
     switch(ch){
             case KEY_UP:
                 if(*cur_row > 0){
@@ -103,11 +114,31 @@ void move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans
                 if(!(check_ans(*cur_row, *cur_col, ans, len_ans))) 
                     zone_search(*cur_row, *cur_col, row, col, ans, len_ans);
                 else{
-                    printw("O");
-                    move(*cur_row, *cur_col);
-                    refresh();
+                    lost(row, col);
+                    return 0;
+                }
+            break;
+            case 'b':
+                printw("B");
+                move(*cur_row, *cur_col);
+                if(check_ans(*cur_row, *cur_col, ans, len_ans)){
+                    win_count++;
+                    num_of_tyles--;
+                }
+            break;
+            case 'c':
+                printw(".");
+                move(*cur_row, *cur_col);
+                if(check_ans(*cur_row, *cur_col, ans, len_ans)){
+                    win_count--;
+                    num_of_tyles++;
                 }
             break;
         }
-    return;
+        if(win_count == len_ans && num_of_tyles == 0){
+                    clear();
+                    move(0,0);
+                    printw("YOU WON");
+                };
+    return 0;
 }

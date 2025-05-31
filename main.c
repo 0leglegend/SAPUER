@@ -5,12 +5,17 @@ void main(int argc,char *argv[]){
   noecho();
   cbreak();
   keypad(stdscr, TRUE);
-  int row = 10, col = 12;
+  srand(time(NULL));
+  int row = ROW, col = COL;
   int ch,cur_row = 0, cur_col = 0;
-  Point ans[] = {{2,2}};
-  int len_ans = 5;
-  for (int i = 0; i < 10;){
-    for (int j = 0; j < 12; j++){
+  int len_ans = 2;
+  Point * ans = (Point *)malloc(len_ans * sizeof(Point));
+  for (int i = 0; i < len_ans; i++){
+    (ans + i)->x = rand() % COL;
+    (ans + i)->y = rand() % ROW;
+  }
+  for (int i = 0; i <= ROW;){
+    for (int j = 0; j < COL; j++){
       printw(".");
     }
     move(i++,0);
