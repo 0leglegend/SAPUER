@@ -11,7 +11,7 @@ void main(int argc,char *argv[]){
   A:
   clear();
   int cur_row = 0, cur_col = 0;
-  int len_ans = 12;
+  int len_ans = 4;
   Point * ans = (Point *)malloc(len_ans * sizeof(Point));
   for (int i = 0; i < len_ans; i++){
     (ans + i)->x = rand() % COL;

@@ -2,6 +2,7 @@
 
 static int num_of_tyles = ROW * COL;
 
+
 void lost(int row, int col){
     printw("O");
     move(0,0);
@@ -42,9 +43,10 @@ int visited(Point arr[], Point p, int step){
     return 0;
 }
 
-void zone_search(int cur_row, int cur_col, int row, int col, Point ans[], int len_ans) {
+int zone_search(int cur_row, int cur_col, int row, int col, Point ans[], int len_ans) {
     Point *visit = malloc(row * col * sizeof(Point));
-    if (!visit) return;  
+    int num_of_removed_tiles = 0;
+    if (!visit) return 0;  
     
     el *stack = NULL;
     int step = 0;
@@ -63,7 +65,7 @@ void zone_search(int cur_row, int cur_col, int row, int col, Point ans[], int le
         }
         
         visit[step++] = c;
-        num_of_tyles--;
+        num_of_removed_tiles++;
         
         move(c.y, c.x);
         int a = check_adj(c.y, c.x, ans, len_ans);
@@ -80,11 +82,12 @@ void zone_search(int cur_row, int cur_col, int row, int col, Point ans[], int le
     
     free(visit);
     move(cur_row, cur_col);
-    return;
+    return num_of_removed_tiles;
 }
 
 int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[], int len_ans){
     static int win_count = 0;
+    int num_of_removed_tiles;
     switch(ch){
             case KEY_UP:
                 if(*cur_row > 0){
@@ -111,10 +114,13 @@ int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[
                 }
             break;
             case 'f':
-                if(!(check_ans(*cur_row, *cur_col, ans, len_ans))) 
-                    zone_search(*cur_row, *cur_col, row, col, ans, len_ans);
-                else{ 
+                if(!(check_ans(*cur_row, *cur_col, ans, len_ans))) {
+                    num_of_removed_tiles = zone_search(*cur_row, *cur_col, row, col, ans, len_ans);
+                    num_of_tyles = (COL * ROW - num_of_removed_tiles == num_of_tyles)?num_of_tyles:(num_of_tyles - num_of_removed_tiles);
+                }
+                else{
                     lost(row, col);
+                    printw("%d %d", win_count, num_of_tyles);
                     win_count = 0;
                     num_of_tyles = ROW * COL;
                 }
