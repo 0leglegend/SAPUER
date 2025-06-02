@@ -6,13 +6,15 @@ void main(int argc,char *argv[]){
   cbreak();
   keypad(stdscr, TRUE);
   srand(time(NULL));
-  int row = ROW, col = COL;
   int ch;
+  VisitedTracker tr;
+  Point * ans;
   A:
   clear();
+  init_tracker(&tr);
   int cur_row = 0, cur_col = 0;
   int len_ans = 4;
-  Point * ans = (Point *)malloc(len_ans * sizeof(Point));
+  ans = (Point *)malloc(len_ans * sizeof(Point));
   for (int i = 0; i < len_ans; i++){
     (ans + i)->x = rand() % COL;
     (ans + i)->y = rand() % ROW;
@@ -26,9 +28,15 @@ void main(int argc,char *argv[]){
   move(0,0);
   refresh();
   while((ch = getch()) != 27){
-    move_select(ch, &cur_row, &cur_col, row, col, ans, len_ans);
-    if(ch == 'r') goto A;
+    move_select(ch, &cur_row, &cur_col, ans, len_ans, &tr);
+    if(ch == 'r'){
+      clear_tracker(&tr);
+      free(ans);
+      goto A;
+    }
   }
+  clear_tracker(&tr);
+  free(ans);
   endwin(); 
   return;
 }

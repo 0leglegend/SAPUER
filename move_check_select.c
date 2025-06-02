@@ -1,9 +1,7 @@
 #include "header.h"
 
-static int num_of_tyles = ROW * COL;
 
-
-void lost(int row, int col){
+void lost(){
     printw("O");
     move(0,0);
     clear();
@@ -43,13 +41,8 @@ int visited(Point arr[], Point p, int step){
     return 0;
 }
 
-int zone_search(int cur_row, int cur_col, int row, int col, Point ans[], int len_ans) {
-    Point *visit = malloc(row * col * sizeof(Point));
-    int num_of_removed_tiles = 0;
-    if (!visit) return 0;  
-    
+void zone_search(int cur_row, int cur_col, Point ans[], int len_ans, VisitedTracker * tr){ 
     el *stack = NULL;
-    int step = 0;
     int dx[] = {-1, 0, 1, -1, 1, -1, 0, 1};
     int dy[] = {-1, -1, -1, 0, 0, 1, 1, 1};
     
@@ -57,37 +50,32 @@ int zone_search(int cur_row, int cur_col, int row, int col, Point ans[], int len
     push(&stack, start);
     
     while(stack) {
+        refresh();
         Point c = pop(&stack);
         
-        if (visited(visit, c, step) || 
-            c.x < 0 || c.x >= col || c.y < 0 || c.y >= row || check_ans(c.y, c.x, ans, len_ans)) {
+        if (visited(tr->visit, c, tr->number) || 
+            c.x < 0 || c.x >= COL || c.y < 0 || c.y >= ROW || check_ans(c.y, c.x, ans, len_ans)) {
             continue;
         }
         
-        visit[step++] = c;
-        num_of_removed_tiles++;
+        tr->visit[tr->number++] = c;
         
         move(c.y, c.x);
-        int a = check_adj(c.y, c.x, ans, len_ans);
-        refresh();
-        if (!a) continue;
+        if (!check_adj(c.y, c.x, ans, len_ans)) continue;
         
         for(int i = 0; i < 8; i++) {
             Point neighbor = {c.x + dx[i], c.y + dy[i]};
-            if (neighbor.x >= 0 && neighbor.x < col && neighbor.y >= 0 && neighbor.y < row && !visited(visit, neighbor, step)) {
+            if (neighbor.x >= 0 && neighbor.x < COL && neighbor.y >= 0 && neighbor.y < ROW && !visited(tr->visit, neighbor, tr->number)) {
                 push(&stack, neighbor);
             }
         }
     }
-    
-    free(visit);
     move(cur_row, cur_col);
-    return num_of_removed_tiles;
+    return;
 }
 
-int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[], int len_ans){
+int move_select(int ch, int* cur_row, int* cur_col, Point ans[], int len_ans, VisitedTracker * tr){
     static int win_count = 0;
-    int num_of_removed_tiles;
     switch(ch){
             case KEY_UP:
                 if(*cur_row > 0){
@@ -96,13 +84,13 @@ int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[
                 }
             break;
             case KEY_DOWN:
-                if(*cur_row < row-1){
+                if(*cur_row < ROW-1){
                     move(++*cur_row, *cur_col);
                     refresh();
                 }
             break;
             case KEY_RIGHT:
-                if(*cur_col < col - 1){
+                if(*cur_col < COL - 1){
                     move(*cur_row, ++*cur_col);
                     refresh();
                 }
@@ -114,15 +102,12 @@ int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[
                 }
             break;
             case 'f':
-                if(!(check_ans(*cur_row, *cur_col, ans, len_ans))) {
-                    num_of_removed_tiles = zone_search(*cur_row, *cur_col, row, col, ans, len_ans);
-                    num_of_tyles = (COL * ROW - num_of_removed_tiles == num_of_tyles)?num_of_tyles:(num_of_tyles - num_of_removed_tiles);
-                }
+                if(!(check_ans(*cur_row, *cur_col, ans, len_ans)))
+                    zone_search(*cur_row, *cur_col, ans, len_ans, tr);
                 else{
-                    lost(row, col);
-                    printw("%d %d", win_count, num_of_tyles);
+                    lost();
+                    printw("\n%d\\%d bombs", win_count, len_ans);
                     win_count = 0;
-                    num_of_tyles = ROW * COL;
                 }
             break;
             case 'b':
@@ -130,24 +115,27 @@ int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[
                 move(*cur_row, *cur_col);
                 if(check_ans(*cur_row, *cur_col, ans, len_ans)){
                     win_count++;
-                    num_of_tyles--;
                 }
             break;
-            case 'c':
-                printw(".");
-                move(*cur_row, *cur_col);
-                if(check_ans(*cur_row, *cur_col, ans, len_ans)){
-                    win_count--;
-                    num_of_tyles++;
-                }
-            break;
-        }
-    if(win_count == len_ans && num_of_tyles == 0){
+    }
+    if((tr->number + win_count) == ROW * COL){
         clear();
         move(0,0);
         win_count = 0;
-        num_of_tyles = ROW * COL;
         printw("YOU WON");
     }
     return 0;
+}
+
+void init_tracker(VisitedTracker * tr){
+    tr->visit = (Point *)malloc(ROW * COL * sizeof(Point));
+    tr->number = 0;
+    return;
+}
+
+void clear_tracker(VisitedTracker * tr){
+    if(tr->visit != NULL) free(tr->visit);
+    tr->visit = NULL;
+    tr->number = 0;
+    return;
 }
