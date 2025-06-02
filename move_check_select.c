@@ -113,9 +113,10 @@ int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[
             case 'f':
                 if(!(check_ans(*cur_row, *cur_col, ans, len_ans))) 
                     zone_search(*cur_row, *cur_col, row, col, ans, len_ans);
-                else{
+                else{ 
                     lost(row, col);
-                    return 0;
+                    win_count = 0;
+                    num_of_tyles = ROW * COL;
                 }
             break;
             case 'b':
@@ -135,10 +136,12 @@ int move_select(int ch, int* cur_row, int* cur_col, int row, int col, Point ans[
                 }
             break;
         }
-        if(win_count == len_ans && num_of_tyles == 0){
-                    clear();
-                    move(0,0);
-                    printw("YOU WON");
-                };
+    if(win_count == len_ans && num_of_tyles == 0){
+        clear();
+        move(0,0);
+        win_count = 0;
+        num_of_tyles = ROW * COL;
+        printw("YOU WON");
+    }
     return 0;
 }
